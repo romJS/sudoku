@@ -37,6 +37,7 @@ const Cell = React.memo(
     const onChange = useCallback(
       (e: any) => {
         const value = e.target.value;
+        /// match checks for empty space or single number value in cell
         const result = value.match(/^$|^\d{1}$/) || [];
         if (!result.length) return;
         handleOnChange(axisX, axisY, e.target.value);

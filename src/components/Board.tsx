@@ -1,10 +1,12 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React from "react";
 import styled from "styled-components";
 import {
   createBoard,
   checkConflicts,
   checkAndSetConflicts,
-  countFilledCells
+  countFilledCells,
+  PLAYGROUND_SIZE,
+  EMPTY_VALUE
 } from "./sudokuLogic";
 import Cell from "./Cell";
 
@@ -32,6 +34,8 @@ const StyledRow = styled.div`
   }
 `;
 
+const NUM_OF_CELLS = PLAYGROUND_SIZE * PLAYGROUND_SIZE;
+
 type Cell = {
   value: string;
   editable: boolean;
@@ -43,50 +47,54 @@ type Props = {
   finishGame: () => void;
 };
 
-const Board = ({ finishGame }: Props) => {
-  const [board, setBoard] = useState<Cell[][]>(createBoard());
+class Board extends React.Component<Props> {
+  state = {
+    board: createBoard()
+  };
 
-  useEffect(() => {
-    const conflicts = checkConflicts(board);
-    const count = countFilledCells(board);
-    if (count === 81 && !conflicts) {
-      finishGame();
+  componentDidUpdate() {
+    const conflicts = checkConflicts(this.state.board);
+    const count = countFilledCells(this.state.board);
+    if (count === NUM_OF_CELLS && !conflicts) {
+      this.props.finishGame();
     }
-  }, [board, finishGame]);
+  }
 
-  const handleOnChange = useCallback(
-    (x: number, y: number, value: string) => {
-      let newBoard = [...board];
-      newBoard[x][y].filled = true;
-      if (value === "") {
-        value = "0";
-        newBoard[x][y].filled = false;
-      }
-      newBoard[x][y].value = value;
-      newBoard = checkAndSetConflicts(newBoard);
-      setBoard(newBoard);
-    },
-    [board]
-  );
-  return (
-    <StyledBoard>
-      {board.map((row: Array<Cell>, rowIndex) => (
-        <StyledRow key={rowIndex}>
-          {row.map((cell: Cell, cellIndex) => (
-            <Cell
-              key={cellIndex}
-              axisX={rowIndex}
-              axisY={cellIndex}
-              value={cell.value !== "0" ? cell.value : ""}
-              editable={cell.editable}
-              handleOnChange={handleOnChange}
-              hasConflict={cell.hasConflict}
-            />
-          ))}
-        </StyledRow>
-      ))}
-    </StyledBoard>
-  );
-};
+  handleOnChange = (x: number, y: number, value: string) => {
+    let newBoard = this.state.board.map(row =>
+      row.map(cellObj => Object.assign({}, cellObj))
+    );
+    newBoard[x][y].filled = true;
+    if (value === "") {
+      value = EMPTY_VALUE;
+      newBoard[x][y].filled = false;
+    }
+    newBoard[x][y].value = value;
+    newBoard = checkAndSetConflicts(newBoard);
+    this.setState({ board: newBoard });
+  };
+
+  render() {
+    return (
+      <StyledBoard>
+        {this.state.board.map((row, rowIndex) => (
+          <StyledRow key={rowIndex}>
+            {row.map((cell, cellIndex) => (
+              <Cell
+                key={cellIndex}
+                axisX={rowIndex}
+                axisY={cellIndex}
+                value={cell.value !== EMPTY_VALUE ? cell.value : ""}
+                editable={cell.editable}
+                handleOnChange={this.handleOnChange}
+                hasConflict={cell.hasConflict}
+              />
+            ))}
+          </StyledRow>
+        ))}
+      </StyledBoard>
+    );
+  }
+}
 
 export default Board;

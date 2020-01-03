@@ -12,14 +12,13 @@ const StyledGame = styled.div`
 `;
 
 const Game: React.FC = () => {
-  const [gameOver, setGameOver] = useState<boolean>(false);
-  const [endTime, setEndTime] = useState<string>("");
+  const [gameOver, setGameOver] = useState(false);
+  const [endTime, setEndTime] = useState("");
 
   const finishGame = useCallback(() => {
     setGameOver(true);
   }, []);
 
-  const gameOverComp = <PopUpWindow time={endTime} />;
   return (
     <StyledGame>
       <h1>SUDOKU</h1>
@@ -31,7 +30,7 @@ const Game: React.FC = () => {
         }}
       />
       <Board finishGame={finishGame} />
-      {gameOver ? gameOverComp : null}
+      {gameOver ? <PopUpWindow time={endTime} /> : null}
     </StyledGame>
   );
 };
