@@ -54,22 +54,26 @@ class Board extends React.Component<Props> {
 
   componentDidUpdate() {
     const conflicts = checkConflicts(this.state.board);
-    const count = countFilledCells(this.state.board);
-    if (count === NUM_OF_CELLS && !conflicts) {
+    const filled = countFilledCells(this.state.board);
+    if (filled === NUM_OF_CELLS && !conflicts) {
       this.props.finishGame();
     }
   }
 
   handleOnChange = (x: number, y: number, value: string) => {
-    let newBoard = this.state.board.map(row =>
-      row.map(cellObj => Object.assign({}, cellObj))
+    let newBoard = this.state.board.map((row, rowIndex) =>
+      row.map((cell, colIndex) => {
+        if (rowIndex === x && colIndex === y) {
+          cell.filled = true;
+          cell.value = value;
+          if (value === "") {
+            cell.value = EMPTY_VALUE;
+            cell.filled = false;
+          }
+        }
+        return Object.assign({}, cell);
+      })
     );
-    newBoard[x][y].filled = true;
-    if (value === "") {
-      value = EMPTY_VALUE;
-      newBoard[x][y].filled = false;
-    }
-    newBoard[x][y].value = value;
     newBoard = checkAndSetConflicts(newBoard);
     this.setState({ board: newBoard });
   };
