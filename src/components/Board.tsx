@@ -62,17 +62,22 @@ class Board extends React.Component<Props> {
 
   handleOnChange = (x: number, y: number, value: string) => {
     let newBoard = this.state.board.map((row, rowIndex) =>
-      row.map((cell, colIndex) => {
-        if (rowIndex === x && colIndex === y) {
-          cell.filled = true;
-          cell.value = value;
-          if (value === "") {
-            cell.value = EMPTY_VALUE;
-            cell.filled = false;
-          }
-        }
-        return Object.assign({}, cell);
-      })
+      row.map((cell, colIndex) =>
+        rowIndex === x && colIndex === y
+          ? {
+              ...cell,
+              ...(value === ""
+                ? {
+                    value: EMPTY_VALUE,
+                    filled: false
+                  }
+                : {
+                    filled: true,
+                    value: value
+                  })
+            }
+          : cell
+      )
     );
     newBoard = checkAndSetConflicts(newBoard);
     this.setState({ board: newBoard });
